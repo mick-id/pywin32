@@ -1,5 +1,5 @@
 # Magic utility that "redirects" to pywintypesxx.dll
-import imp, sys, os
+import importlib, sys, os
 def __import_pywin32_system_module__(modname, globs):
     # This has been through a number of iterations.  The problem: how to 
     # locate pywintypesXX.dll when it may be in a number of places, and how
@@ -22,12 +22,12 @@ def __import_pywin32_system_module__(modname, globs):
         # Look for a native 'lib{modname}.so'
         # NOTE: The _win32sysloader module will probably build in this
         # environment, so it may be better to use that here too.
-        for ext, mode, ext_type in imp.get_suffixes():
-            if ext_type==imp.C_EXTENSION:
+        for ext, mode, ext_type in importlib.get_suffixes():
+            if ext_type==importlib.C_EXTENSION:
                 for path in sys.path:
                     look = os.path.join(path, "lib" + modname + ext)
                     if os.path.isfile(look):
-                        mod = imp.load_module(modname, None, look,
+                        mod = importlib.load_module(modname, None, look,
                                               (ext, mode, ext_type))
                         # and fill our namespace with it.
                         # XXX - if this ever moves to py3k, this will probably
@@ -36,7 +36,7 @@ def __import_pywin32_system_module__(modname, globs):
                         return
         raise ImportError("No dynamic module " + modname)
     # See if this is a debug build.
-    for suffix_item in imp.get_suffixes():
+    for suffix_item in importlib.get_suffixes():
         if suffix_item[0]=='_d.pyd':
             suffix = '_d'
             break
@@ -120,7 +120,7 @@ def __import_pywin32_system_module__(modname, globs):
     #       copy its globals to ours.
     old_mod = sys.modules[modname]
     # Python can load the module
-    mod = imp.load_dynamic(modname, found)
+    mod = importlib.load_dynamic(modname, found)
     # Check the sys.modules[] behaviour we describe above is true...
     if sys.version_info < (3,0):
         assert sys.modules[modname] is old_mod
